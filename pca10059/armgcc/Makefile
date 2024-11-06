@@ -32,6 +32,9 @@ SRC_FILES += \
   $(SDK_ROOT)/modules/nrfx/soc/nrfx_atomic.c \
   $(PROJ_DIR)/main.c \
   $(SDK_ROOT)/modules/nrfx/mdk/system_nrf52840.c \
+  $(SDK_ROOT)/modules/nrfx/mdk/gcc_startup_nrf52840.S \
+  $(SDK_ROOT)/modules/nrfx/drivers/src/nrfx_gpiote.c\
+  $(SDK_ROOT)/modules/nrfx/drivers/src/nrfx_systick.c \
 
 # Include folders common to all targets
 INC_FOLDERS += \
@@ -58,6 +61,8 @@ INC_FOLDERS += \
   $(SDK_ROOT)/components/libraries/memobj \
   $(SDK_ROOT)/external/fprintf \
   $(SDK_ROOT)/components/libraries/log/src \
+  $(SDK_ROOT)/modules/nrfx/drivers/src \
+  $(SDK_ROOT)/modules/nrfx/drivers/include \
 
 # Libraries common to all targets
 LIB_FILES += \
@@ -82,6 +87,8 @@ CFLAGS += -mfloat-abi=hard -mfpu=fpv4-sp-d16
 # keep every function in a separate section, this allows linker to discard unused ones
 CFLAGS += -ffunction-sections -fdata-sections -fno-strict-aliasing
 CFLAGS += -fno-builtin -fshort-enums
+CFLAGS += -DNRFX_SYSTICK_ENABLE
+CFLAGS += -DNRFX_GPIOTE_ENABLE
 
 # C++ flags common to all targets
 CXXFLAGS += $(OPT)

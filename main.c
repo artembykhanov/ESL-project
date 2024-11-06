@@ -1,13 +1,15 @@
 #include <stdbool.h>
 #include <stdint.h>
-#include "nrf_delay.h"
 #include "boards.h"
 #include "nrf_gpio.h"
+#include "nrfx_systick.h"
+#include "nrfx_gpiote.h"
 
 #define DEVICE_ID 6585
-#define LED_ON_TIME_MS 1000
-#define LED_OFF_TIME_MS 1000
-#define PAUSE_AFTER_ID_MS 300
+#define PWM_FREQ 1000                  // Частота ШИМ: 1 кГц
+#define PERIOD_US (1000000 / PWM_FREQ) // Период 1 мс для 1 кГц
+#define MAX_DUTY_CYCLE 100             // Время для дебаунса
+#define DELAY_AFTER_BLINK_MS 1000
 
 #define LED_PIN NRF_GPIO_PIN_MAP(0, 6)
 #define LED_R_PIN NRF_GPIO_PIN_MAP(0, 8)
@@ -16,113 +18,130 @@
 
 #define BUTTON_PIN NRF_GPIO_PIN_MAP(1, 6)
 
-void led_blink(int i);
-void init_pin();
-void init_led_arr(int *led_arr, int len_led_arr);
-bool is_button_press();
-void end_blink();
+#define DIGIT1 (DEVICE_ID / 1000)
+#define DIGIT2 ((DEVICE_ID / 100) % 10)
+#define DIGIT3 ((DEVICE_ID / 10) % 10)
+#define DIGIT4 (DEVICE_ID % 10)
 
-const int digit1 = DEVICE_ID / 1000;
-const int digit2 = (DEVICE_ID / 100) % 10;
-const int digit3 = (DEVICE_ID / 10) % 10;
-const int digit4 = DEVICE_ID % 10;
+volatile bool flag = false;
+
+int index = 0;
+int len_led_arr;
+
+void init_pin();
+void init_led_arr(int *led_arr);
+void pwm_led_fade(int pin);
+void turn_off_all_leds(void);
+void BUTTON_IRQHandler(nrfx_gpiote_pin_t pin, nrf_gpiote_polarity_t action);
 
 int main(void)
 {
     bsp_board_init(BSP_INIT_LEDS);
-    bsp_board_init(BSP_INIT_BUTTONS);
     init_pin();
+    nrfx_systick_init();
 
-    const int len_led_arr = digit1 + digit2 + digit3 + digit4;
+    len_led_arr = DIGIT1 + DIGIT2 + DIGIT3 + DIGIT4;
     int led_arr[len_led_arr];
+    init_led_arr(led_arr);
 
-    init_led_arr(led_arr, len_led_arr);
-
-    int index = 0;
-
+    turn_off_all_leds();
     while (true)
     {
-        if (is_button_press())
+        while (flag)
         {
-            bsp_board_leds_off();
-            nrf_delay_ms(LED_OFF_TIME_MS / 2);
-            led_blink(led_arr[index++]);
-            if (index >= len_led_arr)
-            {
-                nrf_delay_ms(LED_OFF_TIME_MS);
-                end_blink();
-                index = 0;
-            }
-        }
-        else
-        {
-            nrf_delay_ms(100);
+            pwm_led_fade(led_arr[index]);
+            nrfx_systick_delay_ms(DELAY_AFTER_BLINK_MS);
+            index = (index + 1) % len_led_arr;
         }
     }
 }
 
-void led_blink(int pin)
+void pwm_led_fade(int pin)
 {
-    nrf_gpio_pin_write(pin, 0);
+    nrfx_systick_state_t start_time;
 
-    for (int i = 0; i < LED_ON_TIME_MS / 100; i++)
+    for (int duty_cycle = 0; duty_cycle <= MAX_DUTY_CYCLE; duty_cycle++)
     {
-        if (!is_button_press())
+        uint32_t on_time = (duty_cycle * PERIOD_US) / 100;
+        uint32_t off_time = PERIOD_US - on_time;
+
+        nrf_gpio_pin_write(pin, 0);
+        nrfx_systick_get(&start_time);
+        while (!nrfx_systick_test(&start_time, on_time))
         {
-            return;
         }
-        nrf_delay_ms(100);
+
+        nrf_gpio_pin_write(pin, 1);
+        nrfx_systick_get(&start_time);
+        while (!nrfx_systick_test(&start_time, off_time))
+        {
+        }
     }
 
-    nrf_gpio_pin_write(pin, 1);
-    nrf_delay_ms(LED_OFF_TIME_MS / 2);
+    for (int duty_cycle = MAX_DUTY_CYCLE; duty_cycle >= 0; duty_cycle--)
+    {
+        uint32_t on_time = (duty_cycle * PERIOD_US) / 100;
+        uint32_t off_time = PERIOD_US - on_time;
+
+        nrf_gpio_pin_write(pin, 0);
+        nrfx_systick_get(&start_time);
+        while (!nrfx_systick_test(&start_time, on_time))
+        {
+        }
+
+        nrf_gpio_pin_write(pin, 1);
+        nrfx_systick_get(&start_time);
+        while (!nrfx_systick_test(&start_time, off_time))
+        {
+        }
+    }
 }
 
-void init_led_arr(int *led_arr, int len_led_arr)
-{
-    int index = 0;
-
-    for (int i = 0; i < digit1; i++)
-    {
-        led_arr[index++] = LED_PIN;
-    }
-    for (int i = 0; i < digit2; i++)
-    {
-        led_arr[index++] = LED_R_PIN;
-    }
-    for (int i = 0; i < digit3; i++)
-    {
-        led_arr[index++] = LED_G_PIN;
-    }
-    for (int i = 0; i < digit4; i++)
-    {
-        led_arr[index++] = LED_B_PIN;
-    }
-}
-
-void init_pin()
+void init_pin(void)
 {
     nrf_gpio_cfg_output(LED_PIN);
     nrf_gpio_cfg_output(LED_R_PIN);
     nrf_gpio_cfg_output(LED_G_PIN);
     nrf_gpio_cfg_output(LED_B_PIN);
-    nrf_gpio_cfg_input(BUTTON_PIN, NRF_GPIO_PIN_PULLUP);
+
+    nrfx_gpiote_init();
+    nrfx_gpiote_in_config_t button_config = NRFX_GPIOTE_CONFIG_IN_SENSE_TOGGLE(false);
+    button_config.pull = NRF_GPIO_PIN_PULLUP;
+    nrfx_gpiote_in_init(BUTTON_PIN, &button_config, BUTTON_IRQHandler);
+    nrfx_gpiote_in_event_enable(BUTTON_PIN, true);
 }
 
-bool is_button_press()
+void BUTTON_IRQHandler(nrfx_gpiote_pin_t pin, nrf_gpiote_polarity_t action)
 {
-    return nrf_gpio_pin_read(BUTTON_PIN) == 0;
+    flag = !flag;
 }
 
-void end_blink()
+void init_led_arr(int *led_arr)
 {
-    bsp_board_leds_on();
-    nrf_delay_ms(PAUSE_AFTER_ID_MS);
-    bsp_board_leds_off();
-    nrf_delay_ms(PAUSE_AFTER_ID_MS);
-    bsp_board_leds_on();
-    nrf_delay_ms(PAUSE_AFTER_ID_MS);
-    bsp_board_leds_off();
-    nrf_delay_ms(PAUSE_AFTER_ID_MS);
-    nrf_delay_ms(LED_ON_TIME_MS);
+    int index = 0;
+
+    for (int i = 0; i < DIGIT1; i++)
+    {
+        led_arr[index++] = LED_PIN;
+    }
+    for (int i = 0; i < DIGIT2; i++)
+    {
+        led_arr[index++] = LED_R_PIN;
+    }
+    for (int i = 0; i < DIGIT3; i++)
+    {
+        led_arr[index++] = LED_G_PIN;
+    }
+    for (int i = 0; i < DIGIT4; i++)
+    {
+        led_arr[index++] = LED_B_PIN;
+    }
+}
+
+void turn_off_all_leds(void)
+{
+    nrf_gpio_pin_write(LED_PIN, 1);
+    nrf_gpio_pin_write(LED_R_PIN, 1);
+    nrf_gpio_pin_write(LED_G_PIN, 1);
+    nrf_gpio_pin_write(LED_B_PIN, 1);
 }
