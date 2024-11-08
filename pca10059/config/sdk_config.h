@@ -39,6 +39,12 @@
  */
 #ifndef SDK_CONFIG_H
 #define SDK_CONFIG_H
+
+#define APP_TIMER_V2 1
+#define APP_TIMER_V2_RTC1_ENABLED 1
+#define APP_TIMER_ENABLED 1
+#define NRF_LOG_BACKEND_USB_ENABLED 1
+
 // <<< Use Configuration Wizard in Context Menu >>>\n
 #ifdef USE_APP_CONFIG
 #include "app_config.h"
@@ -5071,7 +5077,7 @@
 // <e> TIMER_ENABLED - nrf_drv_timer - TIMER periperal driver - legacy layer
 //==========================================================
 #ifndef TIMER_ENABLED
-#define TIMER_ENABLED 0
+#define TIMER_ENABLED 1
 #endif
 // <o> TIMER_DEFAULT_CONFIG_FREQUENCY  - Timer frequency if in Timer mode
  
