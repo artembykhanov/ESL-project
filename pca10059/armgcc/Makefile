@@ -30,6 +30,9 @@ SRC_FILES += \
   $(SDK_ROOT)/components/libraries/ringbuf/nrf_ringbuf.c \
   $(SDK_ROOT)/components/libraries/strerror/nrf_strerror.c \
   $(SDK_ROOT)/modules/nrfx/soc/nrfx_atomic.c \
+  $(PROJ_DIR)/button_handler.c \
+  $(PROJ_DIR)/led_control.c \
+  $(PROJ_DIR)/pwm_control.c \
   $(PROJ_DIR)/main.c \
   $(SDK_ROOT)/modules/nrfx/mdk/system_nrf52840.c \
   $(SDK_ROOT)/modules/nrfx/mdk/gcc_startup_nrf52840.S \
@@ -44,6 +47,7 @@ SRC_FILES += \
   $(SDK_ROOT)/components/libraries/usbd/app_usbd.c \
   $(SDK_ROOT)/integration/nrfx/legacy/nrf_drv_clock.c \
   $(SDK_ROOT)/modules/nrfx/drivers/src/nrfx_clock.c \
+  $(SDK_ROOT)/modules/nrfx/drivers/src/nrfx_pwm.c \
   $(SDK_ROOT)/modules/nrfx/drivers/src/nrfx_power.c
 
 # Include folders common to all targets
@@ -109,6 +113,7 @@ CFLAGS += -DNRFX_SYSTICK_ENABLE
 CFLAGS += -DNRFX_GPIOTE_ENABLE
 CFLAGS += -DAPP_TIMER_V2
 CFLAGS += -DAPP_TIMER_V2_RTC1_ENABLED
+CFLAGS += -DDEBUG_NRF
 
 # C++ flags common to all targets
 CXXFLAGS += $(OPT)
