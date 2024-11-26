@@ -9,11 +9,16 @@
 #include "nrf_log.h"
 #include "nrf_log_ctrl.h"
 #include "nrf_log_default_backends.h"
+#include "nrf_log_backend_usb.h"
+#include "app_usbd.h"
+#include "app_usbd_serial_num.h"
 
 APP_TIMER_DEF(timer_pwm);
 
 static nrfx_pwm_t rgb_instance = NRFX_PWM_INSTANCE(0);
 static nrfx_pwm_t led_instance = NRFX_PWM_INSTANCE(1);
+
+static void pwm_timer_handler(void *p_context);
 
 static nrf_pwm_values_individual_t pwm_duty_cycles;
 static nrf_pwm_sequence_t const pwm_sequence =
@@ -43,18 +48,15 @@ void pwm_controller_init(void)
 
     nrfx_pwm_init(&rgb_instance, &pwm_config, NULL);
     nrfx_pwm_init(&led_instance, &led_config, NULL);
+
+    app_timer_init();
+    app_timer_create(&timer_pwm, APP_TIMER_MODE_REPEATED, pwm_timer_handler);
 }
 
-void pwm_timer_handler(void *p_context)
+static void pwm_timer_handler(void *p_context)
 {
     led_display_current_color();
     update_duty_cycle_LED1();
-}
-
-void pwm_timer_init(void)
-{
-    app_timer_init();
-    app_timer_create(&timer_pwm, APP_TIMER_MODE_REPEATED, pwm_timer_handler);
 }
 
 void pwm_timer_start(void)

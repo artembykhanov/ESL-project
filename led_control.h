@@ -21,21 +21,34 @@ typedef enum
     MODE_HUE,
     MODE_SATURATION,
     MODE_BRIGHTNESS
-} controller_mode_t;
+} controller_mode;
 
 typedef struct
 {
-    uint32_t afk_mode;
-    uint32_t hue_mode;
-    uint32_t saturation_mode;
-    uint32_t brightness_mode;
-} steps_mode;
+    uint16_t afk_const;
+    uint16_t hue_step;
+    uint16_t saturation_step;
+    uint16_t brightness_const;
+} mode_steps;
+
+typedef struct
+{
+    uint8_t red;
+    uint8_t green;
+    uint8_t blue;
+} RGB_color;
+
+typedef struct
+{
+    uint16_t hue;
+    uint16_t saturation;
+    uint16_t brightness;
+} HSB_color;
+
 
 void set_current_mode(void);
 void update_duty_cycle_RGB(void);
 void update_duty_cycle_LED1(void);
-void change_value_smoothly(uint32_t *value, bool *increasing, uint32_t min_value, uint32_t max_value, uint32_t step);
-void hsv_to_rgb_float(uint32_t h, uint32_t s, uint32_t v, uint8_t *r, uint8_t *g, uint8_t *b);
 void led_display_current_color(void);
 
 void init_led_pin(void);

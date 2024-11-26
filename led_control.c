@@ -11,27 +11,49 @@
 #include "nrf_log.h"
 #include "nrf_log_ctrl.h"
 #include "nrf_log_default_backends.h"
+#include "nrf_log_backend_usb.h"
+#include "app_usbd.h"
+#include "app_usbd_serial_num.h"
 
 static bool increasing_brightness = false;
 static bool increasing_saturation = false;
 
-static uint32_t hue = (int)360 * 0.85;
-static uint32_t saturation = PWM_TOP_VALUE;
-static uint32_t brightness = PWM_TOP_VALUE;
+static bool increasing_hue_LED1 = true;
+static bool increasing_saturation_LED1 = true;
 
-static uint32_t led_step = 0;
+static uint16_t value_duty_LED1 = 0;
 
-controller_mode_t current_mode = MODE_AFK;
+static void hsv_to_rgb_float();
+static void change_value_smoothly(uint16_t *value, bool *increasing, uint16_t min_value, uint16_t max_value, uint16_t step);
 
-steps_mode steps_for_mode = {
-    .afk_mode = 0,
-    .hue_mode = 3,
-    .saturation_mode = 10,
-    .brightness_mode = PWM_TOP_VALUE};
+controller_mode current_mode = MODE_AFK;
+
+const char *controller_mode_strings[] = {
+    "MODE_AFK",
+    "MODE_HUE",
+    "MODE_SATURATION",
+    "MODE_BRIGHTNESS"};
+
+mode_steps current_mode_step = {
+    .afk_const = 0,
+    .hue_step = 3,
+    .saturation_step = 15,
+    .brightness_const = PWM_TOP_VALUE};
+
+RGB_color RGB = {
+    .red = 0,
+    .green = 0,
+    .blue = 0};
+
+HSB_color HSB = {
+    .hue = (uint16_t)360 * 0.85,
+    .saturation = PWM_TOP_VALUE,
+    .brightness = PWM_TOP_VALUE};
 
 void set_current_mode(void)
 {
     current_mode = (current_mode + 1) % 4;
+    NRF_LOG_INFO("Current mode: %s", controller_mode_strings[(int)current_mode]);
 }
 
 void update_duty_cycle_RGB(void)
@@ -39,15 +61,15 @@ void update_duty_cycle_RGB(void)
     switch (current_mode)
     {
     case MODE_HUE:
-        hue = (hue + 1) % 360;
+        HSB.hue = (HSB.hue + 1) % 360;
         break;
 
     case MODE_SATURATION:
-        change_value_smoothly(&saturation, &increasing_saturation, 0, PWM_TOP_VALUE, SATURATION_STEP);
+        change_value_smoothly(&HSB.saturation, &increasing_saturation, 0, PWM_TOP_VALUE, SATURATION_STEP);
         break;
 
     case MODE_BRIGHTNESS:
-        change_value_smoothly(&brightness, &increasing_brightness, 0, PWM_TOP_VALUE, BRIGHTNESS_STEP);
+        change_value_smoothly(&HSB.brightness, &increasing_brightness, 0, PWM_TOP_VALUE, BRIGHTNESS_STEP);
         break;
 
     default:
@@ -60,19 +82,21 @@ void update_duty_cycle_LED1(void)
     switch (current_mode)
     {
     case MODE_HUE:
-        led_step = (led_step + steps_for_mode.hue_mode) % PWM_TOP_VALUE;
+        change_value_smoothly(&value_duty_LED1, &increasing_hue_LED1, 0, PWM_TOP_VALUE, current_mode_step.hue_step);
         break;
 
     case MODE_SATURATION:
-        led_step = (led_step + steps_for_mode.saturation_mode) % PWM_TOP_VALUE;
+        change_value_smoothly(&value_duty_LED1, &increasing_saturation_LED1, 0, PWM_TOP_VALUE, current_mode_step.saturation_step);
         break;
 
     case MODE_BRIGHTNESS:
-        led_step = steps_for_mode.brightness_mode;
+        value_duty_LED1 = current_mode_step.brightness_const;
         break;
 
     case MODE_AFK:
-        led_step = steps_for_mode.afk_mode;
+        value_duty_LED1 = current_mode_step.afk_const;
+        increasing_hue_LED1 = true;
+        increasing_saturation_LED1 = true;
         break;
 
     default:
@@ -80,7 +104,7 @@ void update_duty_cycle_LED1(void)
     }
 }
 
-void change_value_smoothly(uint32_t *value, bool *increasing, uint32_t min_value, uint32_t max_value, uint32_t step)
+static void change_value_smoothly(uint16_t *value, bool *increasing, uint16_t min_value, uint16_t max_value, uint16_t step)
 {
     if (*increasing)
     {
@@ -103,11 +127,11 @@ void change_value_smoothly(uint32_t *value, bool *increasing, uint32_t min_value
 }
 
 // https://www.rapidtables.org/ru/convert/color/hsv-to-rgb.html
-void hsv_to_rgb_float(uint32_t h, uint32_t s, uint32_t v, uint8_t *r, uint8_t *g, uint8_t *b)
+static void hsv_to_rgb_float()
 {
-    float hue = h % 360;
-    float saturation = s / 255.0f;
-    float value = v / 255.0f;
+    float hue = HSB.hue % 360;
+    float saturation = HSB.saturation / 255.0f;
+    float value = HSB.brightness / 255.0f;
 
     float c = value * saturation;                         // Компонента цвета
     float x = c * (1 - fabsf(fmodf(hue / 60.0f, 2) - 1)); // Промежуточное значение
@@ -152,20 +176,20 @@ void hsv_to_rgb_float(uint32_t h, uint32_t s, uint32_t v, uint8_t *r, uint8_t *g
         b_prime = x;
     }
 
-    *r = (uint8_t)((r_prime + m) * 255);
-    *g = (uint8_t)((g_prime + m) * 255);
-    *b = (uint8_t)((b_prime + m) * 255);
+    RGB.red = (uint8_t)((r_prime + m) * 255);
+    RGB.green = (uint8_t)((g_prime + m) * 255);
+    RGB.blue = (uint8_t)((b_prime + m) * 255);
 }
 
 void led_display_current_color(void)
 {
-    uint8_t r, g, b;
-    hsv_to_rgb_float(hue, saturation, brightness, &r, &g, &b);
+    hsv_to_rgb_float();
 
-    pwm_update_duty_cycle(0, led_step);
-    pwm_update_duty_cycle(1, r);
-    pwm_update_duty_cycle(2, g);
-    pwm_update_duty_cycle(3, b);
+    NRF_LOG_INFO("R: %d; G: %d; B: %d", RGB.red, RGB.green, RGB.blue);
+    pwm_update_duty_cycle(0, value_duty_LED1);
+    pwm_update_duty_cycle(1, RGB.red);
+    pwm_update_duty_cycle(2, RGB.green);
+    pwm_update_duty_cycle(3, RGB.blue);
 }
 
 void init_led_pin(void)

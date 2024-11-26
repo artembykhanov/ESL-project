@@ -12,18 +12,13 @@
 
 typedef void (*click_callback)(void);
 
-void button_event_init(click_callback on_single_click, click_callback on_double_click, click_callback on_long_press);
-void button_pin_init(void);
-void button_timers_init(void);
-bool is_button_pressed(void);
-
-void debounce_timer_handler(void *p_context);
-void double_click_timer_handler(void *p_context);
-void long_press_timer_handler(void *p_context);
-void long_press_repeat_timer_handler(void *p_context);
-
-void button_interrupt_handler(nrfx_gpiote_pin_t pin, nrf_gpiote_polarity_t action);
-
-void process_button_click(void);
+/**
+ * @brief Инициализация обработчика кнопок
+ *
+ * @param on_single_click Колбэк для одиночного клика
+ * @param on_double_click Колбэк для двойного клика
+ * @param on_long_press   Колбэк для долгого нажатия
+ */
+void button_init(click_callback on_single_click, click_callback on_double_click, click_callback on_long_press);
 
 #endif // BUTTON_HANDLER_H

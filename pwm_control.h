@@ -14,7 +14,6 @@
 #define PWM_TOP_VALUE 255
 
 void pwm_controller_init(void);
-void pwm_timer_init(void);
 void pwm_timer_start(void);
 void pwm_start_playback(void);
 void pwm_update_duty_cycle(uint8_t channel, uint32_t duty_cycle);
