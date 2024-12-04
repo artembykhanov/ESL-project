@@ -13,6 +13,8 @@
 #include "app_usbd.h"
 #include "app_usbd_serial_num.h"
 
+#define APP_TIMER_REPEATED_MS 30
+
 APP_TIMER_DEF(timer_pwm);
 
 static nrfx_pwm_t rgb_instance = NRFX_PWM_INSTANCE(0);
@@ -56,7 +58,7 @@ void pwm_controller_init(void)
 static void pwm_timer_handler(void *p_context)
 {
     led_display_current_color();
-    update_duty_cycle_LED1();
+    update_value_LED1();
 }
 
 void pwm_timer_start(void)

@@ -60,6 +60,12 @@
 
 // </e>
 
+// <e> NRFX_NVMC_ENABLED - nrfx_nvmc - NVMC peripheral driver
+//==========================================================
+#ifndef NRFX_NVMC_ENABLED
+#define NRFX_NVMC_ENABLED 1
+#endif
+
 // <e> NRF_STACK_GUARD_ENABLED - nrf_stack_guard - Stack guard
 //==========================================================
 #ifndef NRF_STACK_GUARD_ENABLED

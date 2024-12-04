@@ -4,16 +4,11 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#define LED_TURN_OFF 1
-#define LED_TURN_ON 0
-
 #define LED_PIN NRF_GPIO_PIN_MAP(0, 6)
 #define LED_R_PIN NRF_GPIO_PIN_MAP(0, 8)
 #define LED_G_PIN NRF_GPIO_PIN_MAP(1, 9)
 #define LED_B_PIN NRF_GPIO_PIN_MAP(0, 12)
 
-#define SATURATION_STEP 3
-#define BRIGHTNESS_STEP 3
 
 typedef enum
 {
@@ -40,20 +35,21 @@ typedef struct
 
 typedef struct
 {
-    uint16_t hue;
-    uint16_t saturation;
-    uint16_t brightness;
+    uint32_t hue;
+    uint32_t saturation;
+    uint32_t brightness;
 } HSB_color;
 
-
 void set_current_mode(void);
-void update_duty_cycle_RGB(void);
-void update_duty_cycle_LED1(void);
+void update_value_HSB(void);
+void update_value_LED1(void);
 void led_display_current_color(void);
 
 void init_led_pin(void);
 void turn_on_led(int pin);
 void turn_off_led(int pin);
 void turn_off_all_leds(void);
+
+void init_state_RGB(void);
 
 #endif // LED_CONTROL_H

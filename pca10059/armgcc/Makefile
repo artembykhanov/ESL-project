@@ -62,6 +62,8 @@ SRC_FILES += \
   $(SDK_ROOT)/external/utf_converter/utf.c \
   $(SDK_ROOT)/modules/nrfx/drivers/src/nrfx_gpiote.c \
   $(SDK_ROOT)/modules/nrfx/drivers/src/nrfx_pwm.c \
+  $(SDK_ROOT)/modules/nrfx/drivers/src/nrfx_nvmc.c \
+  $(PROJ_DIR)/nvmc_control.c \
   $(PROJ_DIR)/pwm_control.c \
   $(PROJ_DIR)/button_handler.c \
   $(PROJ_DIR)/led_control.c \
@@ -120,6 +122,8 @@ INC_FOLDERS += \
   $(SDK_ROOT)/components/libraries/stack_guard \
   $(SDK_ROOT)/components/libraries/log/src \
   $(SDK_ROOT)/components/softdevice/mbr/headers \
+  $(SDK_ROOT)/components/libraries/bootloader \
+  $(SDK_ROOT)/components/libraries/bootloader/dfu \
 
 # Libraries common to all targets
 LIB_FILES += \

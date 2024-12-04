@@ -5,6 +5,8 @@
 #include "pwm_control.h"
 #include "button_handler.h"
 
+#include "nvmc_control.h"
+
 #include "nrf_log.h"
 #include "nrf_log_ctrl.h"
 #include "nrf_log_default_backends.h"
@@ -26,7 +28,7 @@ void blinky_on_button_double_click(void)
 
 void blinky_on_button_long_press(void)
 {
-    update_duty_cycle_RGB();
+    update_value_HSB();
 }
 
 int main(void)
@@ -62,4 +64,7 @@ void init_helper(void)
     button_init(blinky_on_button_click, blinky_on_button_double_click, blinky_on_button_long_press);
 
     pwm_controller_init();
+
+    nvmc_initialize(sizeof(HSB_color));
+    init_state_RGB();
 }

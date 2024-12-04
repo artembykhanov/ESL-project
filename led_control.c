@@ -1,5 +1,6 @@
 #include "led_control.h"
 #include "pwm_control.h"
+#include "nvmc_control.h"
 
 #include <math.h>
 
@@ -15,16 +16,25 @@
 #include "app_usbd.h"
 #include "app_usbd_serial_num.h"
 
+#define SATURATION_TOP_VALUE 100
+#define BRIGHTNESS_TOP_VALUE 100
+
+#define SATURATION_STEP 1
+#define BRIGHTNESS_STEP 1
+
+#define LED_TURN_OFF 1
+#define LED_TURN_ON 0
+
 static bool increasing_brightness = false;
 static bool increasing_saturation = false;
 
 static bool increasing_hue_LED1 = true;
 static bool increasing_saturation_LED1 = true;
 
-static uint16_t value_duty_LED1 = 0;
+static uint32_t value_duty_LED1 = 0;
 
 static void hsv_to_rgb_float();
-static void change_value_smoothly(uint16_t *value, bool *increasing, uint16_t min_value, uint16_t max_value, uint16_t step);
+static void change_value_smoothly(uint32_t *value, bool *increasing, uint32_t min_value, uint32_t max_value, uint32_t step);
 
 controller_mode current_mode = MODE_AFK;
 
@@ -45,31 +55,80 @@ RGB_color RGB = {
     .green = 0,
     .blue = 0};
 
-HSB_color HSB = {
-    .hue = (uint16_t)360 * 0.85,
-    .saturation = PWM_TOP_VALUE,
-    .brightness = PWM_TOP_VALUE};
+HSB_color HSB_current_state = {
+    .hue = (uint32_t)360 * 0.85,
+    .saturation = SATURATION_TOP_VALUE,
+    .brightness = BRIGHTNESS_TOP_VALUE};
+
+HSB_color HSB_save = {
+    .hue = (uint32_t)360 * 0.85,
+    .saturation = SATURATION_TOP_VALUE,
+    .brightness = BRIGHTNESS_TOP_VALUE};
+
+void init_state_RGB(void)
+{
+    HSB_current_state = HSB_save;
+    uint32_t read = nvmc_read_last_data((uint32_t *)&(HSB_save));
+    if (read > 0)
+    {
+        HSB_current_state = HSB_save;
+    }
+}
+
+static void blinky_save_data(void)
+{
+
+    NRF_LOG_INFO("Start save data");
+
+    if ((abs(HSB_save.hue - HSB_current_state.hue) < 1.f) &&
+        (abs(HSB_save.saturation - HSB_current_state.saturation) < 1.f) &&
+        (abs(HSB_save.brightness - HSB_current_state.brightness) < 1.f))
+    {
+        NRF_LOG_INFO("CURRENT STATE -> Hue: %d; Saturation: %d; Brightness: %d", HSB_current_state.hue, HSB_current_state.saturation, HSB_current_state.brightness);
+        NRF_LOG_INFO("SAVE STATE -> Hue: %d; Saturation: %d; Brightness: %d", HSB_save.hue, HSB_save.saturation, HSB_save.brightness);
+        NRF_LOG_INFO("Nothing save");
+        return;
+    }
+
+    nvmc_write_data((uint32_t *)&(HSB_current_state));
+    while (!nvmc_write_complete_check())
+    {
+    }
+
+    NRF_LOG_INFO("End save data");
+    HSB_save = HSB_current_state;
+
+    NRF_LOG_INFO("CURRENT STATE -> Hue: %d; Saturation: %d; Brightness: %d", HSB_current_state.hue, HSB_current_state.saturation, HSB_current_state.brightness);
+    NRF_LOG_INFO("NEW SAVE STATE -> Hue: %d; Saturation: %d; Brightness: %d", HSB_save.hue, HSB_save.saturation, HSB_save.brightness);
+}
 
 void set_current_mode(void)
 {
     current_mode = (current_mode + 1) % 4;
     NRF_LOG_INFO("Current mode: %s", controller_mode_strings[(int)current_mode]);
+    if (current_mode == MODE_AFK)
+    {
+        blinky_save_data();
+    }
 }
 
-void update_duty_cycle_RGB(void)
+void update_value_HSB(void)
 {
+
+    NRF_LOG_INFO("Hue: %d; Saturation: %d; Brightness: %d", HSB_current_state.hue, HSB_current_state.saturation, HSB_current_state.brightness);
+
     switch (current_mode)
     {
     case MODE_HUE:
-        HSB.hue = (HSB.hue + 1) % 360;
+        HSB_current_state.hue = (HSB_current_state.hue + 1) % 360;
         break;
 
     case MODE_SATURATION:
-        change_value_smoothly(&HSB.saturation, &increasing_saturation, 0, PWM_TOP_VALUE, SATURATION_STEP);
+        change_value_smoothly(&HSB_current_state.saturation, &increasing_saturation, 0, SATURATION_TOP_VALUE, SATURATION_STEP);
         break;
 
     case MODE_BRIGHTNESS:
-        change_value_smoothly(&HSB.brightness, &increasing_brightness, 0, PWM_TOP_VALUE, BRIGHTNESS_STEP);
+        change_value_smoothly(&HSB_current_state.brightness, &increasing_brightness, 0, BRIGHTNESS_TOP_VALUE, BRIGHTNESS_STEP);
         break;
 
     default:
@@ -77,7 +136,7 @@ void update_duty_cycle_RGB(void)
     }
 }
 
-void update_duty_cycle_LED1(void)
+void update_value_LED1(void)
 {
     switch (current_mode)
     {
@@ -104,7 +163,7 @@ void update_duty_cycle_LED1(void)
     }
 }
 
-static void change_value_smoothly(uint16_t *value, bool *increasing, uint16_t min_value, uint16_t max_value, uint16_t step)
+static void change_value_smoothly(uint32_t *value, bool *increasing, uint32_t min_value, uint32_t max_value, uint32_t step)
 {
     if (*increasing)
     {
@@ -129,9 +188,9 @@ static void change_value_smoothly(uint16_t *value, bool *increasing, uint16_t mi
 // https://www.rapidtables.org/ru/convert/color/hsv-to-rgb.html
 static void hsv_to_rgb_float()
 {
-    float hue = HSB.hue % 360;
-    float saturation = HSB.saturation / 255.0f;
-    float value = HSB.brightness / 255.0f;
+    float hue = HSB_current_state.hue % 360;
+    float saturation = HSB_current_state.saturation / 100.0f;
+    float value = HSB_current_state.brightness / 100.0f;
 
     float c = value * saturation;                         // Компонента цвета
     float x = c * (1 - fabsf(fmodf(hue / 60.0f, 2) - 1)); // Промежуточное значение
@@ -185,7 +244,6 @@ void led_display_current_color(void)
 {
     hsv_to_rgb_float();
 
-    NRF_LOG_INFO("R: %d; G: %d; B: %d", RGB.red, RGB.green, RGB.blue);
     pwm_update_duty_cycle(0, value_duty_LED1);
     pwm_update_duty_cycle(1, RGB.red);
     pwm_update_duty_cycle(2, RGB.green);

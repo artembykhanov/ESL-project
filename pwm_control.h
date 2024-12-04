@@ -4,13 +4,6 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#define APP_TIMER_REPEATED_MS 30
-
-#define LED_PIN NRF_GPIO_PIN_MAP(0, 6)
-#define LED_R_PIN NRF_GPIO_PIN_MAP(0, 8)
-#define LED_G_PIN NRF_GPIO_PIN_MAP(1, 9)
-#define LED_B_PIN NRF_GPIO_PIN_MAP(0, 12)
-
 #define PWM_TOP_VALUE 255
 
 void pwm_controller_init(void);

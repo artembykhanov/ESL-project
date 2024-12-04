@@ -12,6 +12,11 @@
 #include "app_usbd.h"
 #include "app_usbd_serial_num.h"
 
+#define DEBOUNCE_INTERVAL APP_TIMER_TICKS(50)
+#define DOUBLE_CLICK_INTERVAL APP_TIMER_TICKS(500)
+#define LONG_PRESS_INITIAL_INTERVAL APP_TIMER_TICKS(1000)
+#define LONG_PRESS_REPEAT_INTERVAL APP_TIMER_TICKS(30)
+
 APP_TIMER_DEF(timer_debounce);
 APP_TIMER_DEF(timer_double_click);
 APP_TIMER_DEF(timer_long_press);
