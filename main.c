@@ -13,6 +13,7 @@
 #include "nrf_log_backend_usb.h"
 #include "app_usbd.h"
 #include "app_usbd_serial_num.h"
+#include "cli_control.h"
 
 void init_logs(void);
 void init_helper(void);
@@ -45,6 +46,7 @@ int main(void)
 
     while (true)
     {
+        cli_process();
         LOG_BACKEND_USB_PROCESS();
         NRF_LOG_PROCESS();
         __WFI();
@@ -64,6 +66,8 @@ void init_helper(void)
     button_init(blinky_on_button_click, blinky_on_button_double_click, blinky_on_button_long_press);
 
     pwm_controller_init();
+
+    cli_init();
 
     nvmc_initialize(sizeof(HSB_color));
     init_state_RGB();

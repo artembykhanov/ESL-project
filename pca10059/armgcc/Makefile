@@ -67,6 +67,7 @@ SRC_FILES += \
   $(PROJ_DIR)/pwm_control.c \
   $(PROJ_DIR)/button_handler.c \
   $(PROJ_DIR)/led_control.c \
+  $(PROJ_DIR)/cli_control.c \
   $(PROJ_DIR)/main.c \
 
 # Include folders common to all targets
@@ -113,6 +114,8 @@ INC_FOLDERS += \
   $(SDK_ROOT)/modules/nrfx/mdk \
   $(SDK_ROOT)/components/libraries/strerror \
   $(SDK_ROOT)/components/libraries/ringbuf \
+  $(SDK_ROOT)/components/libraries/usbd \
+  $(SDK_ROOT)/components/libraries/usbd/class/cdc/acm \
   $(SDK_ROOT)/components/libraries/button \
   $(SDK_ROOT)/modules/nrfx \
   $(SDK_ROOT)/integration/nrfx/legacy \
@@ -124,6 +127,8 @@ INC_FOLDERS += \
   $(SDK_ROOT)/components/softdevice/mbr/headers \
   $(SDK_ROOT)/components/libraries/bootloader \
   $(SDK_ROOT)/components/libraries/bootloader/dfu \
+  $(SDK_ROOT)/modules/nrfx/drivers \
+  $(SDK_ROOT)/components/libraries/usbd/class/cdc/acm \
 
 # Libraries common to all targets
 LIB_FILES += \

@@ -2507,32 +2507,32 @@
 #define NRFX_QSPI_CONFIG_FREQUENCY 15
 #endif
 
-// <s> NRFX_QSPI_PIN_SCK - SCK pin value.
+//   NRFX_QSPI_PIN_SCK - SCK pin value.
 #ifndef NRFX_QSPI_PIN_SCK
 #define NRFX_QSPI_PIN_SCK NRF_QSPI_PIN_NOT_CONNECTED
 #endif
 
-// <s> NRFX_QSPI_PIN_CSN - CSN pin value.
+//   NRFX_QSPI_PIN_CSN - CSN pin value.
 #ifndef NRFX_QSPI_PIN_CSN
 #define NRFX_QSPI_PIN_CSN NRF_QSPI_PIN_NOT_CONNECTED
 #endif
 
-// <s> NRFX_QSPI_PIN_IO0 - IO0 pin value.
+//   NRFX_QSPI_PIN_IO0 - IO0 pin value.
 #ifndef NRFX_QSPI_PIN_IO0
 #define NRFX_QSPI_PIN_IO0 NRF_QSPI_PIN_NOT_CONNECTED
 #endif
 
-// <s> NRFX_QSPI_PIN_IO1 - IO1 pin value.
+//   NRFX_QSPI_PIN_IO1 - IO1 pin value.
 #ifndef NRFX_QSPI_PIN_IO1
 #define NRFX_QSPI_PIN_IO1 NRF_QSPI_PIN_NOT_CONNECTED
 #endif
 
-// <s> NRFX_QSPI_PIN_IO2 - IO2 pin value.
+//   NRFX_QSPI_PIN_IO2 - IO2 pin value.
 #ifndef NRFX_QSPI_PIN_IO2
 #define NRFX_QSPI_PIN_IO2 NRF_QSPI_PIN_NOT_CONNECTED
 #endif
 
-// <s> NRFX_QSPI_PIN_IO3 - IO3 pin value.
+//   NRFX_QSPI_PIN_IO3 - IO3 pin value.
 #ifndef NRFX_QSPI_PIN_IO3
 #define NRFX_QSPI_PIN_IO3 NRF_QSPI_PIN_NOT_CONNECTED
 #endif
@@ -4655,32 +4655,32 @@
 #define QSPI_CONFIG_FREQUENCY 15
 #endif
 
-// <s> QSPI_PIN_SCK - SCK pin value.
+//  QSPI_PIN_SCK - SCK pin value.
 #ifndef QSPI_PIN_SCK
 #define QSPI_PIN_SCK NRF_QSPI_PIN_NOT_CONNECTED
 #endif
 
-// <s> QSPI_PIN_CSN - CSN pin value.
+//  QSPI_PIN_CSN - CSN pin value.
 #ifndef QSPI_PIN_CSN
 #define QSPI_PIN_CSN NRF_QSPI_PIN_NOT_CONNECTED
 #endif
 
-// <s> QSPI_PIN_IO0 - IO0 pin value.
+//  QSPI_PIN_IO0 - IO0 pin value.
 #ifndef QSPI_PIN_IO0
 #define QSPI_PIN_IO0 NRF_QSPI_PIN_NOT_CONNECTED
 #endif
 
-// <s> QSPI_PIN_IO1 - IO1 pin value.
+//  QSPI_PIN_IO1 - IO1 pin value.
 #ifndef QSPI_PIN_IO1
 #define QSPI_PIN_IO1 NRF_QSPI_PIN_NOT_CONNECTED
 #endif
 
-// <s> QSPI_PIN_IO2 - IO2 pin value.
+//  QSPI_PIN_IO2 - IO2 pin value.
 #ifndef QSPI_PIN_IO2
 #define QSPI_PIN_IO2 NRF_QSPI_PIN_NOT_CONNECTED
 #endif
 
-// <s> QSPI_PIN_IO3 - IO3 pin value.
+//  QSPI_PIN_IO3 - IO3 pin value.
 #ifndef QSPI_PIN_IO3
 #define QSPI_PIN_IO3 NRF_QSPI_PIN_NOT_CONNECTED
 #endif
@@ -5709,7 +5709,7 @@
 #ifndef APP_USBD_ENABLED
 #define APP_USBD_ENABLED 1
 #endif
-// <s> APP_USBD_VID - Vendor ID.
+//   APP_USBD_VID - Vendor ID.
 
 // <i> Note: This value is not editable in Configuration Wizard.
 // <i> Vendor ID ordered from USB IF: http://www.usb.org/developers/vendor/
@@ -5717,7 +5717,7 @@
 #define APP_USBD_VID 0x1915
 #endif
 
-// <s> APP_USBD_PID - Product ID.
+//   APP_USBD_PID - Product ID.
 
 // <i> Note: This value is not editable in Configuration Wizard.
 // <i> Selected Product ID
@@ -5843,7 +5843,7 @@
 #define APP_USBD_CONFIG_DESC_STRING_UTF_ENABLED 0
 #endif
 
-// <s> APP_USBD_STRINGS_LANGIDS - Supported languages identifiers.
+//  APP_USBD_STRINGS_LANGIDS - Supported languages identifiers.
 
 // <i> Note: This value is not editable in Configuration Wizard.
 // <i> Comma-separated list of supported languages.
@@ -5865,7 +5865,7 @@
 #define APP_USBD_STRINGS_MANUFACTURER_EXTERN 0
 #endif
 
-// <s> APP_USBD_STRINGS_MANUFACTURER - String descriptor for the manufacturer name.
+//  APP_USBD_STRINGS_MANUFACTURER - String descriptor for the manufacturer name.
 
 // <i> Note: This value is not editable in Configuration Wizard.
 // <i> Comma-separated list of manufacturer names for each defined language.
@@ -5895,7 +5895,7 @@
 #define APP_USBD_STRINGS_PRODUCT_EXTERN 0
 #endif
 
-// <s> APP_USBD_STRINGS_PRODUCT - String descriptor for the product name.
+//  APP_USBD_STRINGS_PRODUCT - String descriptor for the product name.
 
 // <i> Note: This value is not editable in Configuration Wizard.
 // <i> List of product names that is defined the same way like in @ref APP_USBD_STRINGS_MANUFACTURER.
@@ -5919,7 +5919,7 @@
 #define APP_USBD_STRING_SERIAL_EXTERN 0
 #endif
 
-// <s> APP_USBD_STRING_SERIAL - String descriptor for the serial number.
+//  APP_USBD_STRING_SERIAL - String descriptor for the serial number.
 
 // <i> Note: This value is not editable in Configuration Wizard.
 // <i> Serial number that is defined the same way like in @ref APP_USBD_STRINGS_MANUFACTURER.
@@ -5943,7 +5943,7 @@
 #define APP_USBD_STRING_CONFIGURATION_EXTERN 0
 #endif
 
-// <s> APP_USBD_STRINGS_CONFIGURATION - String descriptor for the device configuration.
+//  APP_USBD_STRINGS_CONFIGURATION - String descriptor for the device configuration.
 
 // <i> Note: This value is not editable in Configuration Wizard.
 // <i> Configuration string that is defined the same way like in @ref APP_USBD_STRINGS_MANUFACTURER.
@@ -5953,7 +5953,7 @@
 
 // </e>
 
-// <s> APP_USBD_STRINGS_USER - Default values for user strings.
+//  APP_USBD_STRINGS_USER - Default values for user strings.
 
 // <i> Note: This value is not editable in Configuration Wizard.
 // <i> This value stores all application specific user strings with the default initialization.
@@ -6200,7 +6200,6 @@
 #define HCI_SLIP_ENABLED 0
 #endif
 // <o> HCI_UART_BAUDRATE  - Default Baudrate
- 
 // <323584=> 1200 baud 
 // <643072=> 2400 baud 
 // <1290240=> 4800 baud 
@@ -6223,7 +6222,6 @@
 #endif
 
 // <o> HCI_UART_FLOW_CONTROL  - Hardware Flow Control
- 
 // <0=> Disabled 
 // <1=> Enabled 
 
@@ -6388,7 +6386,6 @@
 #define MEM_MANAGER_CONFIG_LOG_ENABLED 0
 #endif
 // <o> MEM_MANAGER_CONFIG_LOG_LEVEL  - Default Severity level
- 
 // <0=> Off 
 // <1=> Error 
 // <2=> Warning 
@@ -6400,7 +6397,6 @@
 #endif
 
 // <o> MEM_MANAGER_CONFIG_INFO_COLOR  - ANSI escape code prefix.
- 
 // <0=> Default 
 // <1=> Black 
 // <2=> Red 

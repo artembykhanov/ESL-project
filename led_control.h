@@ -52,4 +52,20 @@ void turn_off_all_leds(void);
 
 void init_state_RGB(void);
 
+/**
+ * @brief Установка цвета в формате RGB
+ * @param red значение красного (0-255)
+ * @param green значение зеленого (0-255)
+ * @param blue значение синего (0-255)
+ */
+void led_set_rgb_color(uint8_t red, uint8_t green, uint8_t blue);
+
+/**
+ * @brief Установка цвета в формате HSV
+ * @param hue оттенок (0-360)
+ * @param saturation насыщенность (0-100)
+ * @param value яркость (0-100)
+ */
+void led_set_hsv_color(uint32_t hue, uint32_t saturation, uint32_t value);
+
 #endif // LED_CONTROL_H

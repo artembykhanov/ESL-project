@@ -91,7 +91,7 @@ static void blinky_save_data(void)
     }
 
     nvmc_write_data((uint32_t *)&(HSB_current_state));
-    while (!nvmc_write_complete_check())
+    while (!nvmc_write_complete_check()) // можно убрать
     {
     }
 
@@ -274,4 +274,75 @@ void turn_off_all_leds(void)
     turn_off_led(LED_R_PIN);
     turn_off_led(LED_G_PIN);
     turn_off_led(LED_B_PIN);
+}
+
+/**
+ * @brief Преобразование RGB в HSV
+ * @param r значение красного (0-255)
+ * @param g значение зеленого (0-255)
+ * @param b значение синего (0-255)
+ * @param h указатель для сохранения оттенка (0-360)
+ * @param s указатель для сохранения насыщенности (0-100)
+ * @param v указатель для сохранения яркости (0-100)
+ */
+static void rgb_to_hsv(uint8_t r, uint8_t g, uint8_t b,
+                       uint32_t *h, uint32_t *s, uint32_t *v)
+{
+    float rf = r / 255.0f;
+    float gf = g / 255.0f;
+    float bf = b / 255.0f;
+
+    float cmax = rf;
+    if (gf > cmax)
+        cmax = gf;
+    if (bf > cmax)
+        cmax = bf;
+
+    float cmin = rf;
+    if (gf < cmin)
+        cmin = gf;
+    if (bf < cmin)
+        cmin = bf;
+
+    float delta = cmax - cmin;
+
+    // Вычисление H
+    if (delta == 0)
+    {
+        *h = 0;
+    }
+    else if (cmax == rf)
+    {
+        *h = (uint32_t)(60.0f * fmodf(((gf - bf) / delta), 6));
+    }
+    else if (cmax == gf)
+    {
+        *h = (uint32_t)(60.0f * ((bf - rf) / delta + 2));
+    }
+    else
+    {
+        *h = (uint32_t)(60.0f * ((rf - gf) / delta + 4));
+    }
+
+    // Вычисление S
+    *s = (cmax == 0) ? 0 : (uint32_t)((delta / cmax) * 100);
+
+    // Вычисление V
+    *v = (uint32_t)(cmax * 100);
+}
+
+void led_set_rgb_color(uint8_t red, uint8_t green, uint8_t blue)
+{
+    uint32_t h, s, v;
+    rgb_to_hsv(red, green, blue, &h, &s, &v);
+    HSB_current_state.hue = h;
+    HSB_current_state.saturation = s;
+    HSB_current_state.brightness = v;
+}
+
+void led_set_hsv_color(uint32_t hue, uint32_t saturation, uint32_t value)
+{
+    HSB_current_state.hue = hue;
+    HSB_current_state.saturation = saturation;
+    HSB_current_state.brightness = value;
 }

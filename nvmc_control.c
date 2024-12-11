@@ -60,7 +60,7 @@ static nrfx_err_t nvmc_erase_page(uint32_t *page_start_addr)
  * @param result Указатель для сохранения найденного адреса
  * @return true если нашли  блок, false если страница заполнена
  */
-static bool nvmc_find_last_address(uint32_t *result)
+static bool nvmc_find_last_address(uint32_t *result) //без bool
 {
     uint32_t *addr = (uint32_t *)NVMC_PAGE_START;
     uint32_t *last_valid_addr = NULL;
@@ -94,7 +94,7 @@ void nvmc_initialize(uint32_t writable_block_size)
 uint32_t nvmc_read_last_data(uint32_t *buffer)
 {
     uint32_t last_address = 0;
-
+//!nvmc_context.writable_block_size = writable_block_size; ??
     if (!nvmc_find_last_address(&last_address))
     {
         return 0;
